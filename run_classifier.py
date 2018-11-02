@@ -238,6 +238,39 @@ class MrpcProcessor(DataProcessor):
           InputExample(guid=guid, text_a=text_a, text_b=text_b, label=label))
     return examples
 
+class AtisProcessor(DataProcessor):
+  """Processor for the ATIS data set (only for IC task here)."""
+
+  def get_train_examples(self, data_dir):
+    """See base class."""
+    return self._create_examples(
+        self._read_tsv(os.path.join(data_dir, "atis-liu-lane-train.tsv")), "train")
+
+  def get_dev_examples(self, data_dir):
+    """See base class."""
+    return self._create_examples(
+        self._read_tsv(os.path.join(data_dir, "atis-liu-lane-dev.tsv")), "dev")
+
+  def get_labels(self):
+    """See base class."""
+    return ["atis_flight", "atis_airfare", "atis_ground_service", "atis_airline",
+            "atis_abbreviation", "atis_aircraft", "atis_flight_time", "atis_quantity",
+            "atis_airport", "atis_capacity", "atis_distance", "atis_ground_fare",
+            "atis_city", "atis_flight_no", "atis_meal", "atis_restriction",
+            "atis_day_name", "atis_cheapest"]
+
+  def _create_examples(self, lines, set_type):
+    """Creates examples for the training and dev sets."""
+    examples = []
+    for (i, line) in enumerate(lines):
+      if i == 0:
+        continue
+      guid = "%s-%s" % (set_type, i)
+      text_a = tokenization.convert_to_unicode(line[1])
+      label = tokenization.convert_to_unicode(line[4])
+      examples.append(
+          InputExample(guid=guid, text_a=text_a, label=label))
+    return examples
 
 class ColaProcessor(DataProcessor):
   """Processor for the CoLA data set (GLUE version)."""
@@ -570,6 +603,7 @@ def main(_):
       "cola": ColaProcessor,
       "mnli": MnliProcessor,
       "mrpc": MrpcProcessor,
+      "atis": AtisProcessor
   }
 
   if not FLAGS.do_train and not FLAGS.do_eval:
