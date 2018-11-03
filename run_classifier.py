@@ -272,6 +272,38 @@ class AtisProcessor(DataProcessor):
           InputExample(guid=guid, text_a=text_a, label=label))
     return examples
 
+class SnipsProcessor(DataProcessor):
+  """Processor for the SNIPS data set (only for IC task here)."""
+
+  def get_train_examples(self, data_dir):
+    """See base class."""
+    return self._create_examples(
+        self._read_tsv(os.path.join(data_dir, "snips-2017-bio-train.tsv")), "train")
+
+  def get_dev_examples(self, data_dir):
+    """See base class."""
+    return self._create_examples(
+        self._read_tsv(os.path.join(data_dir, "snips-2017-bio-dev.tsv")), "dev")
+
+  def get_labels(self):
+    """See base class."""
+    return ["PlayMusic", "GetWeather", "BookRestaurant", "SearchScreeningEvent",
+            "RateBook", "SearchCreativeWork", "AddToPlaylist"]
+
+  def _create_examples(self, lines, set_type):
+    """Creates examples for the training and dev sets."""
+    examples = []
+    for (i, line) in enumerate(lines):
+      if i == 0:
+        continue
+      guid = "%s-%s" % (set_type, i)
+      text_a = tokenization.convert_to_unicode(line[1])
+      label = tokenization.convert_to_unicode(line[4])
+      examples.append(
+          InputExample(guid=guid, text_a=text_a, label=label))
+    return examples
+
+
 class ColaProcessor(DataProcessor):
   """Processor for the CoLA data set (GLUE version)."""
 
@@ -603,7 +635,8 @@ def main(_):
       "cola": ColaProcessor,
       "mnli": MnliProcessor,
       "mrpc": MrpcProcessor,
-      "atis": AtisProcessor
+      "atis": AtisProcessor,
+      "snips": SnipsProcessor
   }
 
   if not FLAGS.do_train and not FLAGS.do_eval:
